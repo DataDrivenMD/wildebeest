@@ -15,29 +15,30 @@ export interface MastodonInstance {
   approval_required?: boolean
   invites_enabled?: boolean
 	urls?: InstanceURL
-  statistics?: Statistics
+  statistics?: InstanceStatistics
+  stats?: InstanceStatistics
   thumbnail?: string
   contact_account?: MastodonAccount
-  rules?: Array<Rule>
-  configuration?: Configuration
+  rules?: Array<InstanceRule>
+  configuration?: InstanceConfiguration
 }
 
 export interface InstanceURL {
   streaming_api: string
 }
 
-export type Statistics = {
+export type InstanceStatistics = {
 	user_count: number
   status_count: number
   domain_count: number
 }
 
-export type Rule = {
+export type InstanceRule = {
 	id: string
   text: string
 }
 
-export type Configuration = {
+export type InstanceConfiguration = {
   statuses?: StatusesConfiguration
   media_attachments?: MediaAttachmentsConfiguration
   polls?: PollsConfiguration
