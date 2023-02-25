@@ -7,7 +7,7 @@ type ErrorResponse = {
 
 const headers = {
 	...cors(),
-	'content-type': 'application/json',
+	'content-type': 'application/json; charset=utf-8',
 } as const
 
 function generateErrorResponse(error: string, status: number, errorDescription?: string): Response {
@@ -34,18 +34,38 @@ export function clientUnknown(): Response {
 	return generateErrorResponse(`The client is unknown or invalid`, 403)
 }
 
+export function methodNotAllowed(): Response {
+	return generateErrorResponse(`Method not allowed`, 405)
+}
+
+export function unprocessableEntity(detail: string): Response {
+	return generateErrorResponse(`Unprocessable entity`, 422, detail)
+}
+
 export function internalServerError(): Response {
 	return generateErrorResponse('Internal Server Error', 500)
 }
 
 export function statusNotFound(id: string): Response {
-	return generateErrorResponse('Resource not found', 404, `Status "${id}" not found`)
+	return resourceNotFound('status', id)
 }
 
 export function mediaNotFound(id: string): Response {
-	return generateErrorResponse('Resource not found', 404, `Media "${id}" not found`)
+	return resourceNotFound('media', id)
+}
+
+export function tagNotFound(tag: string): Response {
+	return resourceNotFound('tag', tag)
 }
 
 export function exceededLimit(detail: string): Response {
 	return generateErrorResponse('Limit exceeded', 400, detail)
+}
+
+export function resourceNotFound(name: string, id: string): Response {
+	return generateErrorResponse('Resource not found', 404, `${name} "${id}" not found`)
+}
+
+export function validationError(detail: string): Response {
+	return generateErrorResponse('Validation failed', 422, detail)
 }

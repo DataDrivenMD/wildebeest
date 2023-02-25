@@ -8,13 +8,16 @@ import { Avatar } from '~/components/avatar'
 import { getPersonByEmail } from 'wildebeest/backend/src/activitypub/actors'
 import { getErrorHtml } from '~/utils/getErrorHtml/getErrorHtml'
 import { buildRedirect } from 'wildebeest/functions/oauth/authorize'
+import { getDatabase } from 'wildebeest/backend/src/database'
 
-export const clientLoader = loader$<{ DATABASE: D1Database }, Promise<Client>>(async ({ platform, query, html }) => {
+export const clientLoader = loader$<Promise<Client>, { DATABASE: D1Database }>(async ({ platform, query, html }) => {
 	const client_id = query.get('client_id') || ''
 	let client: Client | null = null
 	try {
-		client = await getClientById(platform.DATABASE, client_id)
-	} catch {
+		client = await getClientById(getDatabase(platform), client_id)
+	} catch (e: unknown) {
+		const error = e as { stack: string; cause: string }
+		console.warn(error.stack, error.cause)
 		throw html(500, getErrorHtml('An error occurred while trying to fetch the client data, please try again later'))
 	}
 	if (client === null) {
@@ -24,8 +27,8 @@ export const clientLoader = loader$<{ DATABASE: D1Database }, Promise<Client>>(a
 })
 
 export const userLoader = loader$<
-	{ DATABASE: D1Database; domain: string },
-	Promise<{ email: string; avatar: URL; name: string; url: URL }>
+	Promise<{ email: string; avatar: URL; name: string; url: URL }>,
+	{ DATABASE: D1Database; domain: string }
 >(async ({ cookie, platform, html, request, redirect, text }) => {
 	const jwt = cookie.get('CF_Authorization')
 	if (jwt === null) {
@@ -36,8 +39,9 @@ export const userLoader = loader$<
 		// TODO: eventually, verify the JWT with Access, however this
 		// is not critical.
 		payload = access.getPayload(jwt.value)
-	} catch (err: unknown) {
-		console.warn((err as { stack: unknown }).stack)
+	} catch (e: unknown) {
+		const error = e as { stack: string; cause: string }
+		console.warn(error.stack, error.cause)
 		throw html(500, getErrorHtml('Failed to validate Access JWT'))
 	}
 
@@ -45,10 +49,10 @@ export const userLoader = loader$<
 		throw html(500, getErrorHtml("The Access JWT doesn't contain an email"))
 	}
 
-	const person = await getPersonByEmail(platform.DATABASE, payload.email)
+	const person = await getPersonByEmail(getDatabase(platform), payload.email)
 	if (person === null) {
 		const isFirstLogin = true
-		const res = await buildRedirect(platform.DATABASE, request as Request, isFirstLogin, jwt.value)
+		const res = await buildRedirect(getDatabase(platform), request as Request, isFirstLogin, jwt.value)
 		if (res.status === 302) {
 			throw redirect(302, res.headers.get('location') || '')
 		} else {
@@ -68,8 +72,8 @@ export const userLoader = loader$<
 })
 
 export default component$(() => {
-	const client = clientLoader.use().value
-	const { email, avatar, name: display_name, url } = userLoader.use().value
+	const client = clientLoader().value
+	const { email, avatar, name: display_name, url } = userLoader().value
 	return (
 		<div class="flex flex-col p-4 items-center">
 			<h1 class="text-center mt-3 mb-5 flex items-center">
@@ -87,6 +91,7 @@ export default component$(() => {
 									url: url.toString(),
 								}}
 								secondary={null}
+								withLinks={true}
 							/>
 						</div>
 						<p class="col-start-2">Signed in as:</p>
