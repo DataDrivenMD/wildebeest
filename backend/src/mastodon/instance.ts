@@ -8,5 +8,5 @@ export async function calculateInstanceStatistics(origin: string, db: Database):
     'user_count': row?.user_count ?? 0,
     'status_count': row?.status_count ?? 0,
     'domain_count': row?.domain_count ?? 1
-  }
+  } as InstanceStatistics
 }
