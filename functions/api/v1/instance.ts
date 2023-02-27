@@ -47,10 +47,7 @@ export async function handleRequest(hostURL: URL, db: Database, env: Env) {
     'registrations': env.INSTANCE_ACCEPTING_REGISTRATIONS ?? false,
     'approval_required': env.INSTANCE_REGISTRATIONS_REQUIRE_APPROVAL ?? false,
     'invites_enabled': env.INSTANCE_INVITES_ENABLED ?? false,
-    'urls': {
-      'streaming_api': undefined
-      // 'streaming_api': `wss://${hostURL.host}`
-    },
+    'urls': {},
     'thumbnail': DEFAULT_THUMBNAIL,
     'contact_account': contactAccount,
     'configuration': {
