@@ -17,20 +17,20 @@ export const onRequest: PagesFunction<Env, any, ContextData> = async ({ data, en
 	const res: CredentialAccount = {
 		...user,
 		source: {
-			note: user.note,
-			fields: user.fields,
+			note: user.note ?? '',
+			fields: user.fields ?? [],
 			privacy: 'public',
 			sensitive: false,
 			language: 'en',
 			follow_requests_count: 0,
 		},
 		role: {
-			id: '0',
-			name: 'user',
+			id: -99,
+			name: '',
 			color: '',
-			position: 1,
-			permissions: 0,
-			highlighted: true,
+			position: -1,
+			permissions: 65536,
+			highlighted: false,
 			created_at: '2022-09-08T22:48:07.983Z',
 			updated_at: '2022-09-08T22:48:07.983Z',
 		},
@@ -40,5 +40,6 @@ export const onRequest: PagesFunction<Env, any, ContextData> = async ({ data, en
 		...cors(),
 		'content-type': 'application/json; charset=utf-8',
 	}
+  console.log(res);
 	return new Response(JSON.stringify(res), { headers })
 }

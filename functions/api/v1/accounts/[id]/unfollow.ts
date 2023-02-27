@@ -10,9 +10,12 @@ import type { Env } from 'wildebeest/backend/src/types/env'
 import * as unfollow from 'wildebeest/backend/src/activitypub/activities/unfollow'
 import type { Relationship } from 'wildebeest/backend/src/types/account'
 import { removeFollowing } from 'wildebeest/backend/src/mastodon/follow'
+import { findActivityPubIdUsingMastodonId } from 'wildebeest/backend/src/accounts/getAccount'
 
 export const onRequest: PagesFunction<Env, any, ContextData> = async ({ request, env, params, data }) => {
-	return handleRequest(request, getDatabase(env), params.id as string, data.connectedActor, env.userKEK)
+  const db = getDatabase(env)
+  const id: string = await findActivityPubIdUsingMastodonId(params.id, db)
+	return handleRequest(request, db, id, data.connectedActor, env.userKEK)
 }
 
 export async function handleRequest(

@@ -1,4 +1,5 @@
 import type { APObject } from 'wildebeest/backend/src/activitypub/objects'
+import { getFederationUA } from 'wildebeest/config/ua'
 
 export interface Collection<T> extends APObject {
 	totalItems: number
@@ -15,9 +16,10 @@ export interface OrderedCollectionPage<T> extends APObject {
 	orderedItems: Array<T>
 }
 
-const headers = {
-	accept: 'application/activity+json',
-}
+const headers = new Headers({
+  'accept': 'application/activity+json',
+  'User-Agent': getFederationUA()
+})
 
 export async function getMetadata(url: URL): Promise<OrderedCollection<any>> {
 	const res = await fetch(url, { headers })

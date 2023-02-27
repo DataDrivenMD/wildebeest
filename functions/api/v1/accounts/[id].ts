@@ -4,7 +4,8 @@ import { type Database, getDatabase } from 'wildebeest/backend/src/database'
 import { cors } from 'wildebeest/backend/src/utils/cors'
 import type { ContextData } from 'wildebeest/backend/src/types/context'
 import type { Env } from 'wildebeest/backend/src/types/env'
-import { getAccount } from 'wildebeest/backend/src/accounts/getAccount'
+import { getAccount, AccountIdentifierType } from 'wildebeest/backend/src/accounts/getAccount'
+import { isNumeric } from 'wildebeest/backend/src/utils/id'
 
 const headers = {
 	...cors(),
@@ -17,7 +18,8 @@ export const onRequest: PagesFunction<Env, any, ContextData> = async ({ request,
 }
 
 export async function handleRequest(domain: string, id: string, db: Database): Promise<Response> {
-	const account = await getAccount(domain, id, db)
+  const idType: AccountIdentifierType = isNumeric(id) ? AccountIdentifierType.MASTODON : AccountIdentifierType.AP
+	const account = await getAccount(domain, id, db, idType)
 
 	if (account) {
 		return new Response(JSON.stringify(account), { headers })

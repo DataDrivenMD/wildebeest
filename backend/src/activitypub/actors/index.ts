@@ -1,8 +1,12 @@
 import { defaultImages } from 'wildebeest/config/accounts'
 import { generateUserKey } from 'wildebeest/backend/src/utils/key-ops'
+import { createMastodonId } from 'wildebeest/backend/src/utils/id'
 import { type APObject, sanitizeContent, getTextContent } from '../objects'
 import { addPeer } from 'wildebeest/backend/src/activitypub/peers'
 import { type Database } from 'wildebeest/backend/src/database'
+import { isNumeric } from 'wildebeest/backend/src/utils/id'
+import { AccountIdentifierType, findActivityPubIdUsingMastodonId } from 'wildebeest/backend/src/accounts/getAccount'
+import { getFederationUA } from 'wildebeest/config/ua'
 
 const PERSON = 'Person'
 const isTesting = typeof jest !== 'undefined'
@@ -34,9 +38,12 @@ export interface Person extends Actor {
 }
 
 export async function get(url: string | URL): Promise<Actor> {
-	const headers = {
-		accept: 'application/activity+json',
-	}
+	const headers = new Headers({
+		'accept': 'application/activity+json',
+    'User-Agent': getFederationUA()
+	})
+  
+  
 	const res = await fetch(url.toString(), { headers })
 	if (!res.ok) {
 		throw new Error(`${url} returned: ${res.status}`)
@@ -80,6 +87,9 @@ export async function get(url: string | URL): Promise<Actor> {
 	if (actor.outbox !== undefined) {
 		actor.outbox = new URL(actor.outbox)
 	}
+  if (actor.mastodon_id === undefined) {
+    actor.mastodon_id = createMastodonId(actor.id)
+  }
 
 	return actor
 }
@@ -137,6 +147,7 @@ type PersonProperties = {
 	icon?: { url: string }
 	image?: { url: string }
 	preferredUsername?: string
+  mastodon_id?: string
 
 	inbox?: string
 	outbox?: string
@@ -194,6 +205,10 @@ export async function createPerson(
 	if (properties.followers === undefined) {
 		properties.followers = id + '/followers'
 	}
+  
+  if (properties.mastodon_id === undefined) {
+    properties.mastodon_id = createMastodonId(id)
+  }
 
 	const row = await db
 		.prepare(
@@ -229,7 +244,14 @@ export async function setActorAlias(db: Database, actorId: URL, alias: URL) {
 	}
 }
 
-export async function getActorById(db: Database, id: URL): Promise<Actor | null> {
+export async function getActorById(db: Database, id: string): Promise<Actor | null> {
+  const idType: AccountIdentifierType = isNumeric(id) ? AccountIdentifierType.MASTODON : AccountIdentifierType.AP
+  const accountId: string = (idType === AccountIdentifierType.AP) ? id : await findActivityPubIdUsingMastodonId(id, db)
+  
+  return _getActorById(db, accountId)
+}
+
+async function _getActorById(db: Database, id: URL): Promise<Actor | null> {
 	const stmt = db.prepare('SELECT * FROM actors WHERE id=?').bind(id.toString())
 	const { results } = await stmt.all()
 	if (!results || results.length === 0) {
@@ -291,6 +313,11 @@ export function personFromRow(row: any): Person {
 		if (properties.followers === undefined) {
 			properties.followers = id + '/followers'
 		}
+    
+    if (properties.mastodon_id === undefined) {
+      properties.mastodon_id = createMastodonId(id)
+    }
+  
 	}
 
 	return {
@@ -298,16 +325,16 @@ export function personFromRow(row: any): Person {
 		[emailSymbol]: row.email,
 
 		...properties,
-		name,
+		id: id,
+    type: PERSON,
+    url: new URL('@' + preferredUsername, 'https://' + domain),
+    mastodon_id: properties.mastodon_id,
+    name: name,
+    preferredUsername: preferredUsername,
+    discoverable: true,
 		icon,
 		image,
-		preferredUsername,
-		discoverable: true,
 		publicKey,
-		type: PERSON,
-		id,
 		published: new Date(row.cdate).toISOString(),
-
-		url: new URL('@' + preferredUsername, 'https://' + domain),
 	} as unknown as Person
 }

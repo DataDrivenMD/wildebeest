@@ -14,9 +14,12 @@ import * as actors from 'wildebeest/backend/src/activitypub/actors'
 import * as webfinger from 'wildebeest/backend/src/webfinger'
 import { getFollowers, loadActors } from 'wildebeest/backend/src/activitypub/actors/follow'
 import * as localFollow from 'wildebeest/backend/src/mastodon/follow'
+import { findActivityPubIdUsingMastodonId } from 'wildebeest/backend/src/accounts/getAccount'
 
 export const onRequest: PagesFunction<Env, any, ContextData> = async ({ params, request, env }) => {
-	return handleRequest(request, getDatabase(env), params.id as string)
+  const db = getDatabase(env)
+  const id: string = await findActivityPubIdUsingMastodonId(params.id, db)
+	return handleRequest(request, db, id)
 }
 
 export async function handleRequest(request: Request, db: Database, id: string): Promise<Response> {

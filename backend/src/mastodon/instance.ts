@@ -2,7 +2,7 @@ import type { InstanceStatistics } from 'wildebeest/backend/src/types/instance'
 import { instanceStatisticsQuery } from 'wildebeest/backend/src/sql/mastodon/instance'
 
 export async function calculateInstanceStatistics(origin: string, db: Database): Promise<InstanceStatistics> {
-	const row: any = await db.prepare(instanceStatisticsQuery).bind(origin).first()
+	const row: any = await db.prepare(instanceStatisticsQuery(origin)).first()
 
 	return {
     'user_count': row?.user_count ?? 0,

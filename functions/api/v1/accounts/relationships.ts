@@ -6,6 +6,7 @@ import type { Person } from 'wildebeest/backend/src/activitypub/actors'
 import type { Env } from 'wildebeest/backend/src/types/env'
 import type { ContextData } from 'wildebeest/backend/src/types/context'
 import { getFollowingAcct, getFollowingRequestedAcct } from 'wildebeest/backend/src/mastodon/follow'
+import { findActivityPubIdUsingMastodonId } from 'wildebeest/backend/src/accounts/getAccount'
 
 export const onRequest: PagesFunction<Env, any, ContextData> = async ({ request, env, data }) => {
 	return handleRequest(request, getDatabase(env), data.connectedActor)
@@ -14,13 +15,17 @@ export const onRequest: PagesFunction<Env, any, ContextData> = async ({ request,
 export async function handleRequest(req: Request, db: Database, connectedActor: Person): Promise<Response> {
 	const url = new URL(req.url)
 
-	let ids = []
+	const ids = []
 	if (url.searchParams.has('id')) {
-		ids.push(url.searchParams.get('id'))
+    const anId: string = await findActivityPubIdUsingMastodonId(url.searchParams.get('id'), db)
+		ids.push(anId)
 	}
 
 	if (url.searchParams.has('id[]')) {
-		ids = url.searchParams.getAll('id[]')
+    for (const id of url.searchParams.getAll('id[]')) {
+      const anId = await findActivityPubIdUsingMastodonId(id, db)
+      ids.push(anId)
+    }
 	}
 
 	if (ids.length === 0) {

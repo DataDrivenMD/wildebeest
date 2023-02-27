@@ -19,6 +19,7 @@ import * as outbox from 'wildebeest/backend/src/activitypub/actors/outbox'
 import * as actors from 'wildebeest/backend/src/activitypub/actors'
 import { toMastodonStatusFromRow } from 'wildebeest/backend/src/mastodon/status'
 import { adjustLocalHostDomain } from 'wildebeest/backend/src/utils/adjustLocalHostDomain'
+import { findActivityPubIdUsingMastodonId } from 'wildebeest/backend/src/accounts/getAccount'
 
 const headers = {
 	...cors(),
@@ -26,7 +27,9 @@ const headers = {
 }
 
 export const onRequest: PagesFunction<Env, any, ContextData> = async ({ request, env, params }) => {
-	return handleRequest(request, getDatabase(env), params.id as string)
+  const db = getDatabase(env)
+  const id: string = await findActivityPubIdUsingMastodonId(params.id, db)
+	return handleRequest(request, db, id)
 }
 
 export async function handleRequest(request: Request, db: Database, id: string): Promise<Response> {

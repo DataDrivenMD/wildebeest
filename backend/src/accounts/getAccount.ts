@@ -8,10 +8,11 @@ import { queryAcct } from 'wildebeest/backend/src/webfinger/index'
 import { loadExternalMastodonAccount, loadLocalMastodonAccount } from 'wildebeest/backend/src/mastodon/account'
 import { MastodonAccount } from '../types'
 import { adjustLocalHostDomain } from '../utils/adjustLocalHostDomain'
-import { findMastodonAccountIDByEmailQuery } from 'wildebeest/backend/src/sql/mastodon/account'
+import { findMastodonAccountIDByEmailQuery, findAccountIDByMastodonIdQuery } from 'wildebeest/backend/src/sql/mastodon/account'
 
-export async function getAccount(domain: string, accountId: string, db: Database): Promise<MastodonAccount | null> {
-	const handle = parseHandle(accountId)
+export async function getAccount(domain: string, accountId: string, db: Database, accountIdType: AccountIdentifierType = AccountIdentifierType.AP): Promise<MastodonAccount | null> {
+	const id: string = (accountIdType === AccountIdentifierType.AP) ? accountId : await findActivityPubIdUsingMastodonId(accountId, db)
+  const handle = parseHandle(id)
 
 	if (handle.domain === null || (handle.domain !== null && handle.domain === domain)) {
 		// Retrieve the statuses from a local user
@@ -48,8 +49,25 @@ async function getLocalAccount(domain: string, db: Database, handle: Handle): Pr
 	return await loadLocalMastodonAccount(db, actor)
 }
 
+export async function findActivityPubIdUsingMastodonId(mastodon_id: string, db: Database): Promise<string | null> {
+  const row: any = await db.prepare(findAccountIDByMastodonIdQuery).bind(mastodon_id).first()
+  try {
+    return row.id as string
+  } catch {
+    return null
+  }  
+}
+
 export async function getAccountByEmail(domain: string, email: string, db: Database): Promise<MastodonAccount | null> {
   const row: any = await db.prepare(findMastodonAccountIDByEmailQuery).bind(email).first()
-    
-  return await getAccount(domain, row?.id, db)
+  try {
+    return await getAccount(domain, row?.id, db, AccountIdentifierType.AP)
+  } catch {
+    return null
+  }  
+}
+
+export enum AccountIdentifierType {
+  MASTODON = "mastodon_id",
+  AP = "id"
 }

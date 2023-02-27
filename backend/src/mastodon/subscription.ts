@@ -86,22 +86,93 @@ export async function createSubscription(
 	return subscriptionFromRow(row)
 }
 
+export async function updateSubscription(
+	db: Database,
+	actor: Actor,
+	client: Client,
+	req: CreateRequest
+): Promise<Subscription> {
+	const query = `
+    UPDATE subscriptions SET
+      alert_mention=?, 
+      alert_status=?, 
+      alert_reblog=?, 
+      alert_follow=?, 
+      alert_follow_request=?, 
+      alert_favourite=?, 
+      alert_poll=?, 
+      alert_update=?, 
+      alert_admin_sign_up=?, 
+      alert_admin_report=?, 
+      policy=?
+    WHERE
+      actor_id=? AND 
+      client_id=? AND 
+      endpoint=? AND 
+      key_auth=?
+    RETURNING actor_id, client_id, endpoint, key_p256dh, key_auth, alert_mention, alert_status, alert_reblog, alert_follow, alert_follow_request, alert_favourite, alert_poll, alert_update, alert_admin_sign_up, alert_admin_report, policy
+    `
+	const row = await db
+		.prepare(query)
+		.bind(
+			req.data.alerts.mention === false ? 0 : 1,
+			req.data.alerts.status === false ? 0 : 1,
+			req.data.alerts.reblog === false ? 0 : 1,
+			req.data.alerts.follow === false ? 0 : 1,
+			req.data.alerts.follow_request === false ? 0 : 1,
+			req.data.alerts.favourite === false ? 0 : 1,
+			req.data.alerts.poll === false ? 0 : 1,
+			req.data.alerts.update === false ? 0 : 1,
+			req.data.alerts.admin_sign_up === false ? 0 : 1,
+			req.data.alerts.admin_report === false ? 0 : 1,
+			req.data.policy ?? 'all',
+      actor.id.toString(),
+      client.id,
+      req.subscription.endpoint,
+      req.subscription.keys.auth
+		)
+		.first<any>()
+	return subscriptionFromRow(row)
+}
+
 export async function getSubscription(db: Database, actor: Actor, client: Client): Promise<Subscription | null> {
 	const query = `
-        SELECT * FROM subscriptions WHERE actor_id=? AND client_id=?
+        SELECT * FROM subscriptions WHERE actor_id=? AND client_id=? ORDER BY cdate DESC LIMIT 1;
     `
-
-	const { success, error, results } = await db.prepare(query).bind(actor.id.toString(), client.id).all()
-	if (!success) {
-		throw new Error('SQL error: ' + error)
+  try {
+    const row = await db.prepare(query).bind(actor.id.toString(), client.id).first()
+    return subscriptionFromRow(row)
+  } catch {
+		console.info('Matching subscription not found in DB')
+    return null
 	}
 
-	if (!results || results.length === 0) {
-		return null
+}
+
+export async function deleteSubscription(
+  db: Database,
+	actor: Actor,
+	client: Client,
+	subscription: PushSubscription
+): Promise<boolean> {
+	const query = `
+        DELETE 
+        FROM subscriptions 
+        WHERE
+          actor_id=? AND 
+          client_id=? AND 
+          endpoint=? AND 
+          key_auth=?
+    ;`
+
+  try {
+    await db.prepare(query).bind(actor.id.toString(), client.id, subscription.endpoint, subscription.keys.auth).first()
+    return true
+  } catch {
+		console.info('Unable to delete subscription from DB')
+    return false
 	}
 
-	const row: any = results[0]
-	return subscriptionFromRow(row)
 }
 
 export async function getSubscriptionForAllClients(db: Database, actor: Actor): Promise<Array<Subscription>> {

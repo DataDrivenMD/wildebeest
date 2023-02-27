@@ -48,7 +48,8 @@ export async function handleRequest(hostURL: URL, db: Database, env: Env) {
     'approval_required': env.INSTANCE_REGISTRATIONS_REQUIRE_APPROVAL ?? false,
     'invites_enabled': env.INSTANCE_INVITES_ENABLED ?? false,
     'urls': {
-      'streaming_api': `wss://${domain}`
+      'streaming_api': undefined
+      // 'streaming_api': `wss://${hostURL.host}`
     },
     'thumbnail': DEFAULT_THUMBNAIL,
     'contact_account': contactAccount,

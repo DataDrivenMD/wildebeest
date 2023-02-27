@@ -1,5 +1,6 @@
 import * as actors from '../activitypub/actors'
 import type { Actor } from '../activitypub/actors'
+import { getFederationUA } from 'wildebeest/config/ua'
 
 export type WebFingerResponse = {
 	subject: string
@@ -7,9 +8,10 @@ export type WebFingerResponse = {
 	links: Array<any>
 }
 
-const headers = {
-	accept: 'application/jrd+json',
-}
+const headers = new Headers({
+	'accept': 'application/jrd+json',
+  'User-Agent': getFederationUA()
+})
 
 export async function queryAcct(domain: string, db: D1Database, acct: string): Promise<Actor | null> {
 	const url = await queryAcctLink(domain, acct)

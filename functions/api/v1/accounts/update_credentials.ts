@@ -15,10 +15,7 @@ import type { CredentialAccount } from 'wildebeest/backend/src/types/account'
 import type { ContextData } from 'wildebeest/backend/src/types/context'
 import { loadLocalMastodonAccount } from 'wildebeest/backend/src/mastodon/account'
 
-const headers = {
-	...cors(),
-	'content-type': 'application/json; charset=utf-8',
-}
+const headers = new Headers(cors())
 
 export const onRequest: PagesFunction<Env, any, ContextData> = async ({ request, data, env }) => {
 	return handleRequest(
@@ -43,15 +40,25 @@ export async function handleRequest(
 	userKEK: string,
 	queue: Queue<DeliverMessageBody>
 ): Promise<Response> {
+  const requestURL: URL = new URL(request.url)
+	const domain = requestURL.hostname
+  
+  // Update CORS headers
+  headers.set('Access-Control-Allow-Credentials', true)
+  headers.set('Access-Control-Allow-Origin', request.headers.get('origin') ?? requestURL.origin)
+  headers.set('Access-Control-Allow-Headers', 'content-type, authorization, idempotency-key')
+  headers.set('Access-Control-Allow-Methods', 'PATCH')
+  headers.set('Access-Control-Max-Age', 30)
+  headers.set('content-type', 'application/json; charset=utf-8')
+  headers.append('Vary', 'Origin; Access-Control-Allow-Methods')
+
 	if (!connectedActor) {
-		return new Response('', { status: 401 })
+    return errors.notAuthorized('missing credentials', 'connectedActor is missing, invalid, or undefined')
 	}
 
 	if (request.method !== 'PATCH') {
-		return new Response('', { headers, status: 400 })
+    return errors.methodNotAllowed()
 	}
-
-	const domain = new URL(request.url).hostname
 
 	// update actor
 	{

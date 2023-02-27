@@ -24,8 +24,19 @@ export async function handleRequest(db: Database, request: Request, vapidKeys: J
 	if (request.method !== 'POST') {
 		return errors.methodNotAllowed()
 	}
-
-	const body: AppsPost = await readBody<AppsPost>(request)
+  
+  let body: AppsPost;
+  try {
+    body = await readBody<AppsPost>(request)
+  } catch {
+    const requestURL: URL = new URL(request.url)
+    body = {
+      redirect_uris: requestURL.searchParams.get('redirect_uris'),
+      website: requestURL.searchParams.get('website'),
+      client_name: requestURL.searchParams.get('client_name'),
+      scopes: requestURL.searchParams.get('scopes')
+    }
+  }
 
 	// Parameter validation according to https://github.com/mastodon/mastodon/blob/main/app/lib/application_extension.rb
 	if (body.client_name === undefined || body.client_name?.trim() === '') {

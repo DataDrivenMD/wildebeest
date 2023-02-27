@@ -12,7 +12,7 @@ function toMastodonAccount(acct: string, res: Actor): MastodonAccount {
 	const header = res.image?.url.toString() ?? defaultImages.header
 
 	return {
-    id: acct,
+    id: res.mastodon_id,
     username: res.preferredUsername || res.name || 'unnamed',
 		acct: acct,
     url: res.url ? res.url.toString() : '',
