@@ -12,35 +12,35 @@ function toMastodonAccount(acct: string, res: Actor): MastodonAccount {
 	const header = res.image?.url.toString() ?? defaultImages.header
 
 	return {
-    id: res.mastodon_id,
-    username: res.preferredUsername || res.name || 'unnamed',
+		id: res.mastodon_id,
+		username: res.preferredUsername || res.name || 'unnamed',
 		acct: acct,
-    url: res.url ? res.url.toString() : '',
+		url: res.url ? res.url.toString() : '',
 
-    display_name: res.name || res.preferredUsername || '',
+		display_name: res.name || res.preferredUsername || '',
 		note: res.summary || '',
 		avatar: avatar,
 		avatar_static: avatar,
 		header: header,
 		header_static: header,
-    locked: false,
+		locked: false,
 		fields: [],
-    emojis: [],
-    
-    bot: false,
-    group: false,
-    
-    discoverable: true,
-    noindex: undefined,
-    moved: undefined,
-    suspended: undefined,
-    limited: undefined,
-    
+		emojis: [],
+
+		bot: false,
+		group: false,
+
+		discoverable: true,
+		noindex: undefined,
+		moved: undefined,
+		suspended: undefined,
+		limited: undefined,
+
 		created_at: res.published || new Date().toISOString(),
-    last_status_at: undefined,
-    statuses_count: 0,
-    followers_count: 0,
-		following_count: 0
+		last_status_at: undefined,
+		statuses_count: 0,
+		followers_count: 0,
+		following_count: 0,
 	}
 }
 
@@ -61,7 +61,6 @@ export async function loadExternalMastodonAccount(
 
 // Load a local user and return it as a MastodonAccount
 export async function loadLocalMastodonAccount(db: Database, res: Actor): Promise<MastodonAccount> {
-
 	// For local user the acct is only the local part of the email address.
 	const acct = res.preferredUsername || 'unknown'
 	const account = toMastodonAccount(acct, res)
@@ -84,14 +83,14 @@ async function calculateMastodonAccountStatistic(actor_id: string, db: Database)
 	const row: any = await db.prepare(mastodonAccountStatisticsQuery).bind(actor_id, actor_id, actor_id).first()
 
 	return {
-    'statuses_count': row?.statuses_count ?? 0,
-    'followers_count': row?.followers_count ?? 0,
-    'following_count': row?.following_count ?? 0
-  }
+		statuses_count: row?.statuses_count ?? 0,
+		followers_count: row?.followers_count ?? 0,
+		following_count: row?.following_count ?? 0,
+	}
 }
 
 type MastodonAccountStatistics = {
-  'statuses_count': number;
-  'followers_count': number;
-  'following_count': number;
+	statuses_count: number
+	followers_count: number
+	following_count: number
 }

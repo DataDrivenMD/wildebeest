@@ -40,24 +40,24 @@ export async function handleRequest(
 	userKEK: string,
 	queue: Queue<DeliverMessageBody>
 ): Promise<Response> {
-  const requestURL: URL = new URL(request.url)
+	const requestURL: URL = new URL(request.url)
 	const domain = requestURL.hostname
-  
-  // Update CORS headers
-  headers.set('Access-Control-Allow-Credentials', true)
-  headers.set('Access-Control-Allow-Origin', request.headers.get('origin') ?? requestURL.origin)
-  headers.set('Access-Control-Allow-Headers', 'content-type, authorization, idempotency-key')
-  headers.set('Access-Control-Allow-Methods', 'PATCH')
-  headers.set('Access-Control-Max-Age', 30)
-  headers.set('content-type', 'application/json; charset=utf-8')
-  headers.append('Vary', 'Origin; Access-Control-Allow-Methods')
+
+	// Update CORS headers
+	headers.set('Access-Control-Allow-Credentials', true)
+	headers.set('Access-Control-Allow-Origin', request.headers.get('origin') ?? requestURL.origin)
+	headers.set('Access-Control-Allow-Headers', 'content-type, authorization, idempotency-key')
+	headers.set('Access-Control-Allow-Methods', 'PATCH')
+	headers.set('Access-Control-Max-Age', 30)
+	headers.set('content-type', 'application/json; charset=utf-8')
+	headers.append('Vary', 'Origin; Access-Control-Allow-Methods')
 
 	if (!connectedActor) {
-    return errors.notAuthorized('missing credentials', 'connectedActor is missing, invalid, or undefined')
+		return errors.notAuthorized('missing credentials', 'connectedActor is missing, invalid, or undefined')
 	}
 
 	if (request.method !== 'PATCH') {
-    return errors.methodNotAllowed()
+		return errors.methodNotAllowed()
 	}
 
 	// update actor

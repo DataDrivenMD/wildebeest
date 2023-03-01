@@ -27,8 +27,8 @@ const headers = {
 }
 
 export const onRequest: PagesFunction<Env, any, ContextData> = async ({ request, env, params }) => {
-  const db = getDatabase(env)
-  const id: string = await findActivityPubIdUsingMastodonId(params.id, db)
+	const db = getDatabase(env)
+	const id: string = await findActivityPubIdUsingMastodonId(params.id, db)
 	return handleRequest(request, db, id)
 }
 

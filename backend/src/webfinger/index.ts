@@ -9,8 +9,8 @@ export type WebFingerResponse = {
 }
 
 const headers = new Headers({
-	'accept': 'application/jrd+json',
-  'User-Agent': getFederationUA()
+	accept: 'application/jrd+json',
+	'User-Agent': getFederationUA(),
 })
 
 export async function queryAcct(domain: string, db: D1Database, acct: string): Promise<Actor | null> {

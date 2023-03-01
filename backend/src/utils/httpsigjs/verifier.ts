@@ -11,8 +11,8 @@ interface Profile {
 }
 
 const headers = new Headers({
-	'Accept': 'application/activity+json',
-  'User-Agent': getFederationUA()
+	Accept: 'application/activity+json',
+	'User-Agent': getFederationUA(),
 })
 
 export async function verifySignature(parsedSignature: ParsedSignature, key: CryptoKey): Promise<boolean> {

@@ -40,7 +40,7 @@ async function upload(file: File, config: Config): Promise<UploadResult> {
 		body: formData,
 		headers: {
 			authorization: 'Bearer ' + config.apiToken,
-      'User-Agent': getFederationUA()
+			'User-Agent': getFederationUA(),
 		},
 	})
 	if (!res.ok) {
@@ -82,7 +82,7 @@ export async function uploadUserContent(request: Request, config: Config): Promi
 	const url = `https://api.cloudflare.com/client/v4/accounts/${config.accountId}/images/v1`
 	const newRequest = new Request(url, request)
 	newRequest.headers.set('authorization', 'Bearer ' + config.apiToken)
-  newRequest.headers.set('User-Agent', getFederationUA())
+	newRequest.headers.set('User-Agent', getFederationUA())
 
 	const res = await fetch(newRequest)
 	if (!res.ok) {

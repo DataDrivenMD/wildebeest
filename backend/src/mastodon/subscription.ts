@@ -126,10 +126,10 @@ export async function updateSubscription(
 			req.data.alerts.admin_sign_up === false ? 0 : 1,
 			req.data.alerts.admin_report === false ? 0 : 1,
 			req.data.policy ?? 'all',
-      actor.id.toString(),
-      client.id,
-      req.subscription.endpoint,
-      req.subscription.keys.auth
+			actor.id.toString(),
+			client.id,
+			req.subscription.endpoint,
+			req.subscription.keys.auth
 		)
 		.first<any>()
 	return subscriptionFromRow(row)
@@ -139,18 +139,17 @@ export async function getSubscription(db: Database, actor: Actor, client: Client
 	const query = `
         SELECT * FROM subscriptions WHERE actor_id=? AND client_id=? ORDER BY cdate DESC LIMIT 1;
     `
-  try {
-    const row = await db.prepare(query).bind(actor.id.toString(), client.id).first()
-    return subscriptionFromRow(row)
-  } catch {
+	try {
+		const row = await db.prepare(query).bind(actor.id.toString(), client.id).first()
+		return subscriptionFromRow(row)
+	} catch {
 		console.info('Matching subscription not found in DB')
-    return null
+		return null
 	}
-
 }
 
 export async function deleteSubscription(
-  db: Database,
+	db: Database,
 	actor: Actor,
 	client: Client,
 	subscription: PushSubscription
@@ -165,14 +164,13 @@ export async function deleteSubscription(
           key_auth=?
     ;`
 
-  try {
-    await db.prepare(query).bind(actor.id.toString(), client.id, subscription.endpoint, subscription.keys.auth).first()
-    return true
-  } catch {
+	try {
+		await db.prepare(query).bind(actor.id.toString(), client.id, subscription.endpoint, subscription.keys.auth).first()
+		return true
+	} catch {
 		console.info('Unable to delete subscription from DB')
-    return false
+		return false
 	}
-
 }
 
 export async function getSubscriptionForAllClients(db: Database, actor: Actor): Promise<Array<Subscription>> {

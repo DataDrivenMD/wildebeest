@@ -13,23 +13,23 @@ export interface MastodonAccount {
 	avatar_static: string
 	header: string
 	header_static: string
-  locked: boolean
-  fields: Array<Field>
-  emojis: Array<Emoji>
-  
-  bot: boolean
-  group: boolean
+	locked: boolean
+	fields: Array<Field>
+	emojis: Array<Emoji>
 
-  discoverable: boolean
-  noindex?: boolean
-  moved?: MastodonAccount
-  suspended?: boolean
-  limited?: boolean
+	bot: boolean
+	group: boolean
+
+	discoverable: boolean
+	noindex?: boolean
+	moved?: MastodonAccount
+	suspended?: boolean
+	limited?: boolean
 
 	created_at: string
-  last_status_at?: string
-  statuses_count: number
-  followers_count: number
+	last_status_at?: string
+	statuses_count: number
+	followers_count: number
 	following_count: number
 }
 
@@ -54,18 +54,18 @@ export type Relationship = {
 
 // https://docs.joinmastodon.org/entities/Account/#CredentialAccount
 export interface CredentialAccount extends MastodonAccount {
-  source: Source
-  role: Role
+	source: Source
+	role: Role
 }
 
 // https://docs.joinmastodon.org/entities/Account/#source
 export type Source = {
-  note: string
-  fields: Array<Field>
-  privacy: Privacy
-  sensitive: boolean
-  language: string
-  follow_requests_count: number
+	note: string
+	fields: Array<Field>
+	privacy: Privacy
+	sensitive: boolean
+	language: string
+	follow_requests_count: number
 }
 
 // https://docs.joinmastodon.org/entities/Role/
@@ -82,5 +82,5 @@ export type Role = {
 }
 
 export interface MutedAccount extends MastodonAccount {
-  mute_expires_at: string
+	mute_expires_at: string
 }

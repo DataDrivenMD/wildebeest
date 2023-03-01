@@ -45,10 +45,14 @@ ORDER BY cdate DESC
 LIMIT 1
 ;`
 
-export const searchCachedAccountsQuery = (limit: number = 40, offset: number = 0, following: boolean = false): string => {
-  const maxResults: number = (limit > 80) ? 80 : limit
-  if (following) {
-    return `
+export const searchCachedAccountsQuery = (
+	limit: number = 40,
+	offset: number = 0,
+	following: boolean = false
+): string => {
+	const maxResults: number = limit > 80 ? 80 : limit
+	if (following) {
+		return `
       SELECT
         id
       FROM actors AS accounts
@@ -71,8 +75,8 @@ export const searchCachedAccountsQuery = (limit: number = 40, offset: number = 0
       LIMIT ${maxResults} 
       OFFSET ${offset}
     ;`
-  } else {
-    return `
+	} else {
+		return `
       SELECT
         id
       FROM actors AS accounts
@@ -87,7 +91,5 @@ export const searchCachedAccountsQuery = (limit: number = 40, offset: number = 0
       LIMIT ${maxResults} 
       OFFSET ${offset}
     ;`
-  }
-  
-  
+	}
 }

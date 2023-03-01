@@ -13,11 +13,11 @@ const headers = {
 }
 
 export const onRequestGet: PagesFunction<Env, any, ContextData> = async ({ request, env }) => {
-  const requestURL: URL = new URL(request.url)
-  const acct: string = requestURL.searchParams?.get('acct')
-  if (!acct) {
-    return unprocessableEntity('`acct` is a required parameter')
-  }
+	const requestURL: URL = new URL(request.url)
+	const acct: string = requestURL.searchParams?.get('acct')
+	if (!acct) {
+		return unprocessableEntity('`acct` is a required parameter')
+	}
 	return handleRequest(requestURL.hostname, acct, getDatabase(env))
 }
 

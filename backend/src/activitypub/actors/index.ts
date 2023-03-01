@@ -39,11 +39,10 @@ export interface Person extends Actor {
 
 export async function get(url: string | URL): Promise<Actor> {
 	const headers = new Headers({
-		'accept': 'application/activity+json',
-    'User-Agent': getFederationUA()
+		accept: 'application/activity+json',
+		'User-Agent': getFederationUA(),
 	})
-  
-  
+
 	const res = await fetch(url.toString(), { headers })
 	if (!res.ok) {
 		throw new Error(`${url} returned: ${res.status}`)
@@ -87,9 +86,9 @@ export async function get(url: string | URL): Promise<Actor> {
 	if (actor.outbox !== undefined) {
 		actor.outbox = new URL(actor.outbox)
 	}
-  if (actor.mastodon_id === undefined) {
-    actor.mastodon_id = createMastodonId(actor.id)
-  }
+	if (actor.mastodon_id === undefined) {
+		actor.mastodon_id = createMastodonId(actor.id)
+	}
 
 	return actor
 }
@@ -147,7 +146,7 @@ type PersonProperties = {
 	icon?: { url: string }
 	image?: { url: string }
 	preferredUsername?: string
-  mastodon_id?: string
+	mastodon_id?: string
 
 	inbox?: string
 	outbox?: string
@@ -205,10 +204,10 @@ export async function createPerson(
 	if (properties.followers === undefined) {
 		properties.followers = id + '/followers'
 	}
-  
-  if (properties.mastodon_id === undefined) {
-    properties.mastodon_id = createMastodonId(id)
-  }
+
+	if (properties.mastodon_id === undefined) {
+		properties.mastodon_id = createMastodonId(id)
+	}
 
 	const row = await db
 		.prepare(
@@ -245,10 +244,10 @@ export async function setActorAlias(db: Database, actorId: URL, alias: URL) {
 }
 
 export async function getActorById(db: Database, id: string): Promise<Actor | null> {
-  const idType: AccountIdentifierType = isNumeric(id) ? AccountIdentifierType.MASTODON : AccountIdentifierType.AP
-  const accountId: string = (idType === AccountIdentifierType.AP) ? id : await findActivityPubIdUsingMastodonId(id, db)
-  
-  return _getActorById(db, accountId)
+	const idType: AccountIdentifierType = isNumeric(id) ? AccountIdentifierType.MASTODON : AccountIdentifierType.AP
+	const accountId: string = idType === AccountIdentifierType.AP ? id : await findActivityPubIdUsingMastodonId(id, db)
+
+	return _getActorById(db, accountId)
 }
 
 async function _getActorById(db: Database, id: URL): Promise<Actor | null> {
@@ -313,11 +312,10 @@ export function personFromRow(row: any): Person {
 		if (properties.followers === undefined) {
 			properties.followers = id + '/followers'
 		}
-    
-    if (properties.mastodon_id === undefined) {
-      properties.mastodon_id = createMastodonId(id)
-    }
-  
+
+		if (properties.mastodon_id === undefined) {
+			properties.mastodon_id = createMastodonId(id)
+		}
 	}
 
 	return {
@@ -326,12 +324,12 @@ export function personFromRow(row: any): Person {
 
 		...properties,
 		id: id,
-    type: PERSON,
-    url: new URL('@' + preferredUsername, 'https://' + domain),
-    mastodon_id: properties.mastodon_id,
-    name: name,
-    preferredUsername: preferredUsername,
-    discoverable: true,
+		type: PERSON,
+		url: new URL('@' + preferredUsername, 'https://' + domain),
+		mastodon_id: properties.mastodon_id,
+		name: name,
+		preferredUsername: preferredUsername,
+		discoverable: true,
 		icon,
 		image,
 		publicKey,

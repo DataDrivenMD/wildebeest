@@ -17,15 +17,15 @@ export async function handleRequest(req: Request, db: Database, connectedActor: 
 
 	const ids = []
 	if (url.searchParams.has('id')) {
-    const anId: string = await findActivityPubIdUsingMastodonId(url.searchParams.get('id'), db)
+		const anId: string = await findActivityPubIdUsingMastodonId(url.searchParams.get('id'), db)
 		ids.push(anId)
 	}
 
 	if (url.searchParams.has('id[]')) {
-    for (const id of url.searchParams.getAll('id[]')) {
-      const anId = await findActivityPubIdUsingMastodonId(id, db)
-      ids.push(anId)
-    }
+		for (const id of url.searchParams.getAll('id[]')) {
+			const anId = await findActivityPubIdUsingMastodonId(id, db)
+			ids.push(anId)
+		}
 	}
 
 	if (ids.length === 0) {

@@ -17,8 +17,8 @@ import { getFollowing, loadActors } from 'wildebeest/backend/src/activitypub/act
 import { findActivityPubIdUsingMastodonId } from 'wildebeest/backend/src/accounts/getAccount'
 
 export const onRequest: PagesFunction<Env, any, ContextData> = async ({ params, request, env }) => {
-  const db = getDatabase(env)
-  const id: string = await findActivityPubIdUsingMastodonId(params.id, db)
+	const db = getDatabase(env)
+	const id: string = await findActivityPubIdUsingMastodonId(params.id, db)
 	return handleRequest(request, db, id)
 }
 
@@ -44,7 +44,7 @@ async function getRemoteFollowing(request: Request, handle: Handle, db: Database
 		return new Response('', { status: 404 })
 	}
 
-  const actor = await actors.getAndCache(link, db)
+	const actor = await actors.getAndCache(link, db)
 	const followingIds = await getFollowing(actor)
 	const following = await loadActors(db, followingIds)
 

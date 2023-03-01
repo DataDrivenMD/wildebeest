@@ -5,8 +5,8 @@ export async function calculateInstanceStatistics(origin: string, db: Database):
 	const row: any = await db.prepare(instanceStatisticsQuery(origin)).first()
 
 	return {
-    'user_count': row?.user_count ?? 0,
-    'status_count': row?.status_count ?? 0,
-    'domain_count': row?.domain_count ?? 1
-  } as InstanceStatistics
+		user_count: row?.user_count ?? 0,
+		status_count: row?.status_count ?? 0,
+		domain_count: row?.domain_count ?? 1,
+	} as InstanceStatistics
 }

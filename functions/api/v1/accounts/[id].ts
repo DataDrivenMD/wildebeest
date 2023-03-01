@@ -18,7 +18,7 @@ export const onRequest: PagesFunction<Env, any, ContextData> = async ({ request,
 }
 
 export async function handleRequest(domain: string, id: string, db: Database): Promise<Response> {
-  const idType: AccountIdentifierType = isNumeric(id) ? AccountIdentifierType.MASTODON : AccountIdentifierType.AP
+	const idType: AccountIdentifierType = isNumeric(id) ? AccountIdentifierType.MASTODON : AccountIdentifierType.AP
 	const account = await getAccount(domain, id, db, idType)
 
 	if (account) {

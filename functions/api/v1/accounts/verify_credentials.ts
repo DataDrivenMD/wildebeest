@@ -40,6 +40,6 @@ export const onRequest: PagesFunction<Env, any, ContextData> = async ({ data, en
 		...cors(),
 		'content-type': 'application/json; charset=utf-8',
 	}
-  console.log(res);
+	console.log(res)
 	return new Response(JSON.stringify(res), { headers })
 }

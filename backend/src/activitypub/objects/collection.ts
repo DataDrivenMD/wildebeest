@@ -17,8 +17,8 @@ export interface OrderedCollectionPage<T> extends APObject {
 }
 
 const headers = new Headers({
-  'accept': 'application/activity+json',
-  'User-Agent': getFederationUA()
+	accept: 'application/activity+json',
+	'User-Agent': getFederationUA(),
 })
 
 export async function getMetadata(url: URL): Promise<OrderedCollection<any>> {
