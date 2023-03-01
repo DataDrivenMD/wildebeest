@@ -17,7 +17,7 @@ import { getFollowing, loadActors } from 'wildebeest/backend/src/activitypub/act
 import { findActivityPubIdUsingMastodonId } from 'wildebeest/backend/src/accounts/getAccount'
 
 export const onRequest: PagesFunction<Env, any, ContextData> = async ({ params, request, env }) => {
-	const db = getDatabase(env)
+	const db = await getDatabase(env)
 	const id: string = await findActivityPubIdUsingMastodonId(params.id, db)
 	return handleRequest(request, db, id)
 }

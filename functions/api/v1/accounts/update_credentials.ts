@@ -19,7 +19,7 @@ const headers = new Headers(cors())
 
 export const onRequest: PagesFunction<Env, any, ContextData> = async ({ request, data, env }) => {
 	return handleRequest(
-		getDatabase(env),
+		await getDatabase(env),
 		request,
 		data.connectedActor,
 		env.CF_ACCOUNT_ID,

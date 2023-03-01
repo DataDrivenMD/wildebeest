@@ -1,4 +1,5 @@
 import * as actors from '../activitypub/actors'
+import { type Database } from 'wildebeest/backend/src/database'
 import type { Actor } from '../activitypub/actors'
 import { getFederationUA } from 'wildebeest/config/ua'
 
@@ -13,7 +14,7 @@ const headers = new Headers({
 	'User-Agent': getFederationUA(),
 })
 
-export async function queryAcct(domain: string, db: D1Database, acct: string): Promise<Actor | null> {
+export async function queryAcct(domain: string, db: Database, acct: string): Promise<Actor | null> {
 	const url = await queryAcctLink(domain, acct)
 	if (url === null) {
 		return null

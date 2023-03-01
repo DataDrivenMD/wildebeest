@@ -9,7 +9,7 @@ import { getFollowingAcct, getFollowingRequestedAcct } from 'wildebeest/backend/
 import { findActivityPubIdUsingMastodonId } from 'wildebeest/backend/src/accounts/getAccount'
 
 export const onRequest: PagesFunction<Env, any, ContextData> = async ({ request, env, data }) => {
-	return handleRequest(request, getDatabase(env), data.connectedActor)
+	return handleRequest(request, await getDatabase(env), data.connectedActor)
 }
 
 export async function handleRequest(req: Request, db: Database, connectedActor: Person): Promise<Response> {

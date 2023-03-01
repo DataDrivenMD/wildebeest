@@ -27,7 +27,7 @@ const headers = {
 }
 
 export const onRequest: PagesFunction<Env, any, ContextData> = async ({ request, env, params }) => {
-	const db = getDatabase(env)
+	const db = await getDatabase(env)
 	const id: string = await findActivityPubIdUsingMastodonId(params.id, db)
 	return handleRequest(request, db, id)
 }
@@ -143,7 +143,7 @@ FROM outbox_objects
 INNER JOIN objects ON objects.id=outbox_objects.object_id
 INNER JOIN actors ON actors.id=outbox_objects.actor_id
 WHERE objects.type='Note'
-      ${withReplies ? '' : "AND json_extract(objects.properties, '$.inReplyTo') IS NULL"}
+      ${withReplies ? '' : 'AND ' + db.qb.jsonExtractIsNull('objects.properties', 'inReplyTo')}
       AND outbox_objects.target = '${PUBLIC_GROUP}'
       AND outbox_objects.actor_id = ?1
       AND outbox_objects.cdate > ?2
@@ -164,7 +164,7 @@ LIMIT ?3 OFFSET ?4
 		return new Response(JSON.stringify(out), { headers })
 	}
 
-	let afterCdate = '00-00-00 00:00:00'
+	let afterCdate = db.qb.epoch()
 	if (url.searchParams.has('max_id')) {
 		// Client asked to retrieve statuses after the max_id
 		// As opposed to Mastodon we don't use incremental ID but UUID, we need
