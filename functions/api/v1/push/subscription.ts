@@ -191,5 +191,5 @@ export async function handleDeleteRequest(db: Database, request: Request, connec
 		: errors.notAuthorized(
 				'invalid push subscription deletion request',
 				'Either the subscription does not exist, or the client presented invalid or outdated credentials'
-		  )
+    )
 }
