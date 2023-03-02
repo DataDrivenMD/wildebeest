@@ -1,5 +1,6 @@
 import type { InstanceStatistics } from 'wildebeest/backend/src/types/instance'
-import { instanceStatisticsQuery } from 'wildebeest/backend/src/sql/mastodon/instance'
+import { instanceStatisticsQuery } from 'wildebeest/backend/src/mastodon/sql/instance'
+import { Database } from 'wildebeest/backend/src/database'
 
 export async function calculateInstanceStatistics(origin: string, db: Database): Promise<InstanceStatistics> {
 	const row: any = await db.prepare(instanceStatisticsQuery(origin)).first()

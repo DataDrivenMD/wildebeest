@@ -2,37 +2,45 @@
 // https://docs.joinmastodon.org/methods/instance/
 import type { Env } from 'wildebeest/backend/src/types/env'
 import { cors } from 'wildebeest/backend/src/utils/cors'
+import * as error from 'wildebeest/backend/src/errors'
 import { DEFAULT_THUMBNAIL } from 'wildebeest/backend/src/config'
-import { MASTODON_API_VERSION, getVersion } from 'wildebeest/config/versions'
+import { getVersion } from 'wildebeest/config/versions'
 import { calculateInstanceStatistics } from 'wildebeest/backend/src/mastodon/instance'
-import { MastodonInstance, type InstanceStatistics } from 'wildebeest/backend/src/types/instance'
-import { MastodonAccount } from '../../../backend/src/types/account'
-import { getAccount, getAccountByEmail } from '../../../backend/src/accounts/getAccount'
+import { MastodonInstance, InstanceStatistics } from 'wildebeest/backend/src/types/instance'
+import { MastodonAccount } from 'wildebeest/backend/src/types/account'
+import { loadLocalMastodonAccount } from 'wildebeest/backend/src/mastodon/account'
 import { Database, getDatabase } from 'wildebeest/backend/src/database'
+import { getAdmins } from 'wildebeest/functions/api/wb/settings/server/admins'
+import { emailSymbol } from 'wildebeest/backend/src/activitypub/actors'
 
-export const onRequestGet: PagesFunction<Env> = async (context: EventContext): Response | Promise<Response> => {
-	const hostURL: URL = new URL(context.request.url)
-	const db: Database = getDatabase(context.env)
-	return handleRequest(hostURL, db, context.env)
+export const onRequest: PagesFunction<Env, any> = async ({ env, request }) => {
+	const domain: string = new URL(request.url).hostname
+	const db: Database = await getDatabase(env)
+	return handleRequest(domain, db, env)
 }
 
-export async function handleRequest(hostURL: URL, db: Database, env: Env) {
-	const domain: string = hostURL.hostname ?? env.DOMAIN
+export async function handleRequest(domain: string, db: Database, env: Env) {
 	const headers = {
 		...cors(),
 		'content-type': 'application/json; charset=utf-8',
 	}
 
-	const instanceStatistics: InstanceStatistics = await calculateInstanceStatistics(hostURL.origin, db)
-
-	let contactAccount: MastodonAccount | undefined
-
-	if (env.INSTANCE_CONTACT_ACCOUNT) {
-		contactAccount = (await getAccount(domain, env.INSTANCE_CONTACT_ACCOUNT, db)) ?? undefined
+	const adminActors = await getAdmins(db)
+	if (adminActors.length === 0) {
+		console.error('Server misconfiguration: missing admin account')
+		return error.internalServerError()
 	}
-	if (contactAccount === undefined) {
-		contactAccount = (await getAccountByEmail(domain, env.ADMIN_EMAIL, db)) ?? undefined
+
+	const adminAccounts: Map<string, MastodonAccount> = new Map()
+	for (const adminActor of adminActors) {
+		const adminAccount = await loadLocalMastodonAccount(db, adminActor)
+		adminAccounts.set(adminActor[emailSymbol], adminAccount)
 	}
+
+	const contactAccount: MastodonAccount | undefined = adminAccounts.has(env.ADMIN_EMAIL)
+		? adminAccounts.get(env.ADMIN_EMAIL)
+		: Array.from(adminAccounts.values())[0]
+	const instanceStatistics: InstanceStatistics = await calculateInstanceStatistics(domain, db)
 
 	const res: MastodonInstance = {
 		uri: domain,
@@ -40,12 +48,12 @@ export async function handleRequest(hostURL: URL, db: Database, env: Env) {
 		description: env.INSTANCE_DESCR,
 		short_description: env.INSTANCE_DESCR,
 		email: env.ADMIN_EMAIL,
-		version: getVersion() ?? MASTODON_API_VERSION,
+		version: getVersion(domain),
 		languages: ['en'],
 		registrations: env.INSTANCE_ACCEPTING_REGISTRATIONS ?? false,
 		approval_required: env.INSTANCE_REGISTRATIONS_REQUIRE_APPROVAL ?? false,
-		invites_enabled: env.INSTANCE_INVITES_ENABLED ?? false,
-		urls: {},
+		invites_enabled: false,
+		urls: undefined,
 		thumbnail: DEFAULT_THUMBNAIL,
 		contact_account: contactAccount,
 		configuration: {
@@ -72,6 +80,5 @@ export async function handleRequest(hostURL: URL, db: Database, env: Env) {
 		stats: instanceStatistics,
 		rules: [],
 	}
-
 	return new Response(JSON.stringify(res), { headers })
 }

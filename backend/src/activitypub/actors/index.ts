@@ -4,6 +4,7 @@ import { createMastodonId } from 'wildebeest/backend/src/utils/id'
 import { type APObject, sanitizeContent, getTextContent } from '../objects'
 import { addPeer } from 'wildebeest/backend/src/activitypub/peers'
 import { type Database } from 'wildebeest/backend/src/database'
+import { Buffer } from 'buffer'
 import { isNumeric } from 'wildebeest/backend/src/utils/id'
 import { AccountIdentifierType, findActivityPubIdUsingMastodonId } from '../../accounts/getAccount'
 import { getFederationUA } from 'wildebeest/config/ua'
@@ -157,7 +158,8 @@ export async function createPerson(
 	db: Database,
 	userKEK: string,
 	email: string,
-	properties: PersonProperties = {}
+	properties: PersonProperties = {},
+	admin: boolean = false
 ): Promise<Person> {
 	const userKeyPair = await generateUserKey(userKEK)
 
@@ -165,7 +167,7 @@ export async function createPerson(
 	// Since D1 and better-sqlite3 behaviors don't exactly match, presumable
 	// because Buffer support is different in Node/Worker. We have to transform
 	// the values depending on the platform.
-	if (isTesting) {
+	if (isTesting || db.client === 'neon') {
 		privkey = Buffer.from(userKeyPair.wrappedPrivKey)
 		salt = Buffer.from(userKeyPair.salt)
 	} else {
@@ -209,12 +211,12 @@ export async function createPerson(
 	const row = await db
 		.prepare(
 			`
-              INSERT INTO actors(id, type, email, pubkey, privkey, privkey_salt, properties)
-              VALUES(?, ?, ?, ?, ?, ?, ?)
+              INSERT INTO actors(id, type, email, pubkey, privkey, privkey_salt, properties, is_admin)
+              VALUES(?, ?, ?, ?, ?, ?, ?, ?)
               RETURNING *
           `
 		)
-		.bind(id, PERSON, email, userKeyPair.pubKey, privkey, salt, JSON.stringify(properties))
+		.bind(id, PERSON, email, userKeyPair.pubKey, privkey, salt, JSON.stringify(properties), admin ? 1 : null)
 		.first()
 
 	return personFromRow(row)
