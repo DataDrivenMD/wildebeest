@@ -37,7 +37,7 @@ export async function handleRequest(request: Request, db: Database): Promise<Res
 		return new Response('', { status: 403 })
 	}
 
-	const actor = await getActorById(db, actorURL(domain, handle.localPart))
+	const actor = await getActorById(db, actorURL(domain, handle.localPart).toJSON())
 	if (actor === null) {
 		return new Response('', { status: 404 })
 	}

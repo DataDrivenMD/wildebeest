@@ -33,7 +33,9 @@ describe('Mastodon APIs', () => {
 				INSTANCE_DESCR: 'c',
 			} as Env
 
-			const res = await v1_instance.handleRequest(domain, env)
+			const db = await makeDB()
+
+			const res = await v1_instance.handleRequest(domain, db, env)
 			assert.equal(res.status, 200)
 			assertCORS(res)
 			assertJSON(res)
@@ -54,7 +56,9 @@ describe('Mastodon APIs', () => {
 				INSTANCE_DESCR: 'c',
 			} as Env
 
-			const res = await v1_instance.handleRequest(domain, env)
+			const db = await makeDB()
+
+			const res = await v1_instance.handleRequest(domain, db, env)
 			assert.equal(res.status, 200)
 
 			{

@@ -7,12 +7,12 @@ import * as apFollow from 'wildebeest/backend/src/activitypub/actors/follow'
 import { type Database } from 'wildebeest/backend/src/database'
 import { mastodonAccountStatisticsQuery } from 'wildebeest/backend/src/sql/mastodon/account'
 
-function toMastodonAccount(acct: string, res: Actor): MastodonAccount {
+function toMastodonAccount(acct: string, res: Actor, mastodon_id?: string): MastodonAccount {
 	const avatar = res.icon?.url.toString() ?? defaultImages.avatar
 	const header = res.image?.url.toString() ?? defaultImages.header
 
 	return {
-		id: res.mastodon_id,
+		id: mastodon_id ?? acct,
 		username: res.preferredUsername || res.name || 'unnamed',
 		acct: acct,
 		url: res.url ? res.url.toString() : '',
@@ -48,9 +48,10 @@ function toMastodonAccount(acct: string, res: Actor): MastodonAccount {
 export async function loadExternalMastodonAccount(
 	acct: string,
 	actor: Actor,
-	loadStats: boolean = false
+	loadStats: boolean = false,
+	mastodon_id?: string
 ): Promise<MastodonAccount> {
-	const account = toMastodonAccount(acct, actor)
+	const account = toMastodonAccount(acct, actor, mastodon_id)
 	if (loadStats === true) {
 		account.statuses_count = await apOutbox.countStatuses(actor)
 		account.followers_count = await apFollow.countFollowers(actor)
@@ -60,10 +61,14 @@ export async function loadExternalMastodonAccount(
 }
 
 // Load a local user and return it as a MastodonAccount
-export async function loadLocalMastodonAccount(db: Database, res: Actor): Promise<MastodonAccount> {
+export async function loadLocalMastodonAccount(
+	db: Database,
+	res: Actor,
+	mastodon_id?: string
+): Promise<MastodonAccount> {
 	// For local user the acct is only the local part of the email address.
 	const acct = res.preferredUsername || 'unknown'
-	const account = toMastodonAccount(acct, res)
+	const account = toMastodonAccount(acct, res, mastodon_id)
 
 	const row: any = await calculateMastodonAccountStatistic(res.id.toString(), db)
 	account.statuses_count = row.statuses_count

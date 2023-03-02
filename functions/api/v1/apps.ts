@@ -31,10 +31,10 @@ export async function handleRequest(db: Database, request: Request, vapidKeys: J
 	} catch {
 		const requestURL: URL = new URL(request.url)
 		body = {
-			redirect_uris: requestURL.searchParams.get('redirect_uris'),
-			website: requestURL.searchParams.get('website'),
-			client_name: requestURL.searchParams.get('client_name'),
-			scopes: requestURL.searchParams.get('scopes'),
+			redirect_uris: requestURL.searchParams.get('redirect_uris') ?? '',
+			website: requestURL.searchParams.get('website') ?? '',
+			client_name: requestURL.searchParams.get('client_name') ?? '',
+			scopes: requestURL.searchParams.get('scopes') ?? '',
 		}
 	}
 

@@ -23,7 +23,7 @@ export async function handleRequest(domain: string, db: Database, id: string): P
 	}
 
 	const actorId = actorURL(domain, handle.localPart)
-	const actor = await getActorById(db, actorId)
+	const actor = await getActorById(db, actorId.toString())
 	if (actor === null) {
 		return new Response('', { status: 404 })
 	}

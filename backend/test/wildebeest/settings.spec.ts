@@ -49,7 +49,7 @@ describe('Wildebeest', () => {
 			assert.equal(res.status, 201)
 
 			// Ensure the actor has the alias set
-			const newActor = await getActorById(db, actor.id)
+			const newActor = await getActorById(db, actor.id.toString())
 			assert(newActor)
 			assert(newActor.alsoKnownAs)
 			assert.equal(newActor.alsoKnownAs.length, 1)

@@ -202,7 +202,7 @@ export async function handle(
 					continue
 				}
 
-				const person = await actors.getActorById(db, actorURL(domain, handle.localPart))
+				const person = await actors.getActorById(db, actorURL(domain, handle.localPart).toJSON())
 				if (person === null) {
 					console.warn(`person ${recipients[i]} not found`)
 					continue
@@ -240,7 +240,7 @@ export async function handle(
 			const objectId = getObjectAsId()
 			const actorId = getActorAsId()
 
-			const receiver = await actors.getActorById(db, objectId)
+			const receiver = await actors.getActorById(db, objectId.toJSON())
 			if (receiver !== null) {
 				const originalActor = await actors.getAndCache(new URL(actorId), db)
 				const receiverAcct = `${receiver.preferredUsername}@${domain}`
@@ -299,7 +299,7 @@ export async function handle(
 			}
 
 			// notify the user
-			const targetActor = await actors.getActorById(db, new URL(obj[originalActorIdSymbol]))
+			const targetActor = await actors.getActorById(db, new URL(obj[originalActorIdSymbol]).toJSON())
 			if (targetActor === null) {
 				console.warn('object actor not found')
 				break
@@ -327,7 +327,7 @@ export async function handle(
 			}
 
 			const fromActor = await actors.getAndCache(actorId, db)
-			const targetActor = await actors.getActorById(db, new URL(obj[originalActorIdSymbol]))
+			const targetActor = await actors.getActorById(db, new URL(obj[originalActorIdSymbol]).toJSON())
 			if (targetActor === null) {
 				console.warn('object actor not found')
 				break
@@ -381,7 +381,7 @@ export async function handle(
 
 			const fromActor = await actors.getAndCache(fromActorId, db)
 
-			const localActor = await actors.getActorById(db, target)
+			const localActor = await actors.getActorById(db, target.toJSON())
 			if (localActor === null) {
 				console.warn(`actor ${target} not found`)
 				break

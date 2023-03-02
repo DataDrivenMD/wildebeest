@@ -125,7 +125,7 @@ describe('Mastodon APIs', () => {
 			assert.equal(data.display_name, 'newsven')
 			assert.equal(data.note, 'hein')
 
-			const updatedActor: any = await getActorById(db, connectedActor.id)
+			const updatedActor: any = await getActorById(db, connectedActor.id.toJSON())
 			assert(updatedActor)
 			assert.equal(updatedActor.name, 'newsven')
 			assert.equal(updatedActor.summary, 'hein')

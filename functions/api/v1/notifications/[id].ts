@@ -40,7 +40,7 @@ export async function handleRequest(
 	const row = await db.prepare(query).bind(id, connectedActor.id.toString()).first<NotificationsQueryResult>()
 
 	const from_actor_id = new URL(row.from_actor_id)
-	const fromActor = await getActorById(db, from_actor_id)
+	const fromActor = await getActorById(db, from_actor_id.toJSON())
 	if (!fromActor) {
 		throw new Error('unknown from actor')
 	}

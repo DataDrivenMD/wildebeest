@@ -19,8 +19,11 @@ export async function getAccount(
 	db: Database,
 	accountIdType: AccountIdentifierType = AccountIdentifierType.AP
 ): Promise<MastodonAccount | null> {
-	const id: string =
+	const id: string | null =
 		accountIdType === AccountIdentifierType.AP ? accountId : await findActivityPubIdUsingMastodonId(accountId, db)
+
+	if (id === null) return null
+
 	const handle = parseHandle(id)
 
 	if (handle.domain === null || (handle.domain !== null && handle.domain === domain)) {
@@ -50,7 +53,7 @@ async function getRemoteAccount(handle: Handle, acct: string, db: Database): Pro
 async function getLocalAccount(domain: string, db: Database, handle: Handle): Promise<MastodonAccount | null> {
 	const actorId = actorURL(adjustLocalHostDomain(domain), handle.localPart)
 
-	const actor = await getActorById(db, actorId)
+	const actor = await getActorById(db, actorId.toString())
 	if (actor === null) {
 		return null
 	}

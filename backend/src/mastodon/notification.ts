@@ -228,7 +228,7 @@ export async function getNotifications(db: Database, actor: Actor, domain: strin
 		const properties = JSON.parse(result.properties)
 		const notifFromActorId = new URL(result.notif_from_actor_id)
 
-		const notifFromActor = await getActorById(db, notifFromActorId)
+		const notifFromActor = await getActorById(db, notifFromActorId.toString())
 		if (!notifFromActor) {
 			console.warn('unknown actor')
 			continue

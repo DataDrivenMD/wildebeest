@@ -24,7 +24,7 @@ export default {
 
 		try {
 			for (const message of batch.messages) {
-				const actor = await actors.getActorById(db, new URL(message.body.actorId))
+				const actor = await actors.getActorById(db, message.body.actorId)
 				if (actor === null) {
 					console.warn(`actor ${message.body.actorId} is missing`)
 					return

@@ -5,7 +5,7 @@ import { type APObject, sanitizeContent, getTextContent } from '../objects'
 import { addPeer } from 'wildebeest/backend/src/activitypub/peers'
 import { type Database } from 'wildebeest/backend/src/database'
 import { isNumeric } from 'wildebeest/backend/src/utils/id'
-import { AccountIdentifierType, findActivityPubIdUsingMastodonId } from 'wildebeest/backend/src/accounts/getAccount'
+import { AccountIdentifierType, findActivityPubIdUsingMastodonId } from '../../accounts/getAccount'
 import { getFederationUA } from 'wildebeest/config/ua'
 
 const PERSON = 'Person'
@@ -86,9 +86,6 @@ export async function get(url: string | URL): Promise<Actor> {
 	if (actor.outbox !== undefined) {
 		actor.outbox = new URL(actor.outbox)
 	}
-	if (actor.mastodon_id === undefined) {
-		actor.mastodon_id = createMastodonId(actor.id)
-	}
 
 	return actor
 }
@@ -96,7 +93,7 @@ export async function get(url: string | URL): Promise<Actor> {
 // Get and cache the Actor locally
 export async function getAndCache(url: URL, db: Database): Promise<Actor> {
 	{
-		const actor = await getActorById(db, url)
+		const actor = await getActorById(db, url.toJSON())
 		if (actor !== null) {
 			return actor
 		}
@@ -245,9 +242,14 @@ export async function setActorAlias(db: Database, actorId: URL, alias: URL) {
 
 export async function getActorById(db: Database, id: string): Promise<Actor | null> {
 	const idType: AccountIdentifierType = isNumeric(id) ? AccountIdentifierType.MASTODON : AccountIdentifierType.AP
-	const accountId: string = idType === AccountIdentifierType.AP ? id : await findActivityPubIdUsingMastodonId(id, db)
+	const accountId: string | null =
+		idType === AccountIdentifierType.AP ? id : await findActivityPubIdUsingMastodonId(id, db)
 
-	return _getActorById(db, accountId)
+	if (accountId === null) {
+		return null
+	}
+
+	return _getActorById(db, new URL(accountId))
 }
 
 async function _getActorById(db: Database, id: URL): Promise<Actor | null> {
@@ -314,7 +316,7 @@ export function personFromRow(row: any): Person {
 		}
 
 		if (properties.mastodon_id === undefined) {
-			properties.mastodon_id = createMastodonId(id)
+			properties.mastodon_id = createMastodonId(id.toJSON())
 		}
 	}
 
